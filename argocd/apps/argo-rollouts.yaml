@@ -11,6 +11,8 @@ spec:
     targetRevision: 2.37.7
     helm:
       values: |
+        controller:
+          replicas: 1
         dashboard:
           enabled: true
   destination:
@@ -22,3 +24,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
