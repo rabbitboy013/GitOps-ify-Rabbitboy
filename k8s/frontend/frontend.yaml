@@ -49,7 +49,7 @@ metadata:
   name: frontend
   namespace: demo
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   replicas: 2
   selector:
@@ -91,7 +91,7 @@ metadata:
   name: frontend
   namespace: demo
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   selector:
     app: frontend
