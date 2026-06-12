@@ -18,7 +18,12 @@ spec:
               matchLabels:
                 alertmanagerConfig: email-test
         grafana:
+          enabled: false
           adminPassword: admin
+        kubeStateMetrics:
+          enabled: false
+        nodeExporter:
+          enabled: false
         kubeControllerManager:
           enabled: false
         kubeEtcd:
