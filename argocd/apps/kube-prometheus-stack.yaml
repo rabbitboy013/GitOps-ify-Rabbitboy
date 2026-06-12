@@ -13,6 +13,10 @@ spec:
       values: |
         alertmanager:
           enabled: true
+          alertmanagerSpec:
+            alertmanagerConfigSelector:
+              matchLabels:
+                alertmanagerConfig: email-test
         grafana:
           adminPassword: admin
         kubeControllerManager:
@@ -24,6 +28,7 @@ spec:
         prometheus:
           prometheusSpec:
             retention: 6h
+            ruleSelectorNilUsesHelmValues: false
             serviceMonitorSelectorNilUsesHelmValues: false
             resources:
               requests:

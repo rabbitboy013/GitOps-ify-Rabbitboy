@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: email-test
+  namespace: monitoring
+spec:
+  groups:
+    - name: email-test
+      rules:
+        - alert: EmailTestAlert
+          expr: vector(1)
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: GitOps lab email test
+            description: This alert verifies that Alertmanager can send email.
