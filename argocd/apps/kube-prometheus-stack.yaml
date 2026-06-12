@@ -20,7 +20,7 @@ spec:
               matchLabels:
                 alertmanagerConfig: email-test
         grafana:
-          enabled: false
+          enabled: true
           adminPassword: admin
         kubeStateMetrics:
           enabled: false
