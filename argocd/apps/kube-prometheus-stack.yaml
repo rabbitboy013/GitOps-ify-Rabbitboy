@@ -12,7 +12,7 @@ spec:
     helm:
       values: |
         alertmanager:
-          enabled: false
+          enabled: true
         grafana:
           adminPassword: admin
         kubeControllerManager:
