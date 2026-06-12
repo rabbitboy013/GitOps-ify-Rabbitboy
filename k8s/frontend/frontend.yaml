@@ -28,7 +28,7 @@ data:
         <title>GitOps Frontend</title>
       </head>
       <body>
-        <h1>GitOps Frontend</h1>
+        <h1>GitOps Frontend XDD</h1>
         <p id="result">Loading backend...</p>
         <script>
           fetch("/api/")
