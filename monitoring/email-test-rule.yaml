@@ -3,6 +3,8 @@ kind: PrometheusRule
 metadata:
   name: email-test
   namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
 spec:
   groups:
     - name: email-test
