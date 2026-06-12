@@ -1,4 +1,4 @@
-t$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
 $email = Read-Host "Gmail address used to send and receive the test alert"
 $securePassword = Read-Host "Gmail App Password (input is hidden)" -AsSecureString
