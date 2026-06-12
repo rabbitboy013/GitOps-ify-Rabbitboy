@@ -11,11 +11,15 @@ spec:
       rules:
         - record: api:http_5xx_ratio_5m
           expr: |
-            (
-              sum(rate(flask_http_request_total{namespace="demo",service="api",status=~"5.."}[5m])) or vector(0)
-            )
+            sum(rate(flask_http_request_total{namespace="demo",service="api",status=~"5.."}[5m]))
             /
-            clamp_min(
-              (sum(rate(flask_http_request_total{namespace="demo",service="api"}[5m])) or vector(0)),
-              1
-            )
+            clamp_min(sum(rate(flask_http_request_total{namespace="demo",service="api"}[5m])), 1)
+        - alert: ApiHigh5xxRatio
+          expr: api:http_5xx_ratio_5m > 0.05
+          for: 1m
+          labels:
+            severity: warning
+            service: api
+          annotations:
+            summary: API 5xx ratio is too high
+            description: The 5xx ratio of the demo API is above 5% for more than 1 minute. This should trigger the SLO alert and can be used to validate rollback or canary abort behavior.
