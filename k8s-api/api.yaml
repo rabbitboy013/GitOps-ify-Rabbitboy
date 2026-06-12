@@ -38,10 +38,10 @@ spec:
         - analysis:
             templates:
               - templateName: api-error-rate
-        - pause: {}
         - setWeight: 50
-        - pause:
-            duration: 30s
+        - analysis:
+            templates:
+              - templateName: api-error-rate
         - setWeight: 100
 ---
 apiVersion: v1

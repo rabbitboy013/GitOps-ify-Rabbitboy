@@ -22,23 +22,23 @@
 
 ## 3. Những phần đã hoàn thành
 
-- [ ] Chuẩn bị môi trường local
-- [ ] Khởi tạo Minikube cluster
-- [ ] Cài ArgoCD
-- [ ] Bootstrap `root Application`
-- [ ] Deploy `backend`
-- [ ] Deploy `frontend`
-- [ ] Deploy `api`
-- [ ] Deploy `argo-rollouts`
-- [ ] Deploy `kube-prometheus-stack`
-- [ ] Deploy `monitoring-lab`
-- [ ] Cấu hình `ServiceMonitor`
-- [ ] Cấu hình email Alertmanager
-- [ ] Test frontend/backend
-- [ ] Test API `/healthz` và `/metrics`
-- [ ] Test Prometheus query
-- [ ] Test alert email
-- [ ] Kiểm tra self-heal / prune / sync
+- [x] Chuẩn bị môi trường local
+- [x] Khởi tạo Minikube cluster
+- [x] Cài ArgoCD
+- [x] Bootstrap `root Application`
+- [x] Deploy `backend`
+- [x] Deploy `frontend`
+- [x] Deploy `api`
+- [x] Deploy `argo-rollouts`
+- [x] Deploy `kube-prometheus-stack`
+- [x] Deploy `monitoring-lab`
+- [x] Cấu hình `ServiceMonitor`
+- [x] Cấu hình email Alertmanager
+- [x] Test frontend/backend
+- [x] Test API `/healthz` và `/metrics`
+- [x] Test Prometheus query
+- [x] Test alert email
+- [x] Kiểm tra self-heal / prune / sync
 
 ## 4. Danh sách phần đã tắt vì RAM 8GB
 
@@ -74,6 +74,8 @@
 
 - **File liên quan:** `argocd/root.yaml`
 - **Application con:** `backend`, `frontend`, `api`, `argo-rollouts`, `kube-prometheus-stack`, `monitoring-lab`
+- **Kết quả thực tế:** root Application đã sync và tự tạo các Application con; các app con ở trạng thái Synced/Healthy.
+- **Ảnh / file đính kèm:** ![Root application synced](image-11.png)
 
 ### 5.4. Frontend / backend
 
@@ -105,7 +107,7 @@
 - **Kết quả mong đợi:** target scrape lên, query trả dữ liệu
 - **Ảnh / file đính kèm:** ![alt text](image-7.png)
   ![alt text](image-8.png)
-![alt text](image-10.png)
+  ![alt text](image-10.png)
 
 ### 5.7. Alertmanager / email test
 
@@ -114,6 +116,7 @@
   - `.\scripts\configure-alertmanager-email.ps1`
   - `kubectl -n monitoring port-forward svc/kube-prometheus-stack-alertmanager 9093:9093`
 - **Kết quả mong đợi:** email test alert được gửi
+- **Kết quả thực tế:** Alertmanager nhận rule test và gửi email alert thành công về Gmail cá nhân.
 - **Ảnh / file đính kèm:** ![alt text](image-9.png)
 
 ## 6. Các file đã chỉnh sửa
@@ -140,14 +143,16 @@
 - **Vấn đề 1:** do bị giới hạn ram nên phải set thấp các yêu cầu trong lab cho là CPU và RAM 6gb
   - **Nguyên nhân:** không thể chạy được , bị giới hạn ram khiến các local khác bị tràn và lỗi log
   - **Cách xử lý:** Điều chỉnh và tắt bớt những phần không cần thiết
-- **Vấn đề 2:**
-  - **Nguyên nhân:**
-  - **Cách xử lý:**
+- **Vấn đề 2:** port-forward bị trùng cổng 8080 khi mở ArgoCD
+  - **Nguyên nhân:** một tiến trình `kubectl port-forward` cũ đã chiếm cổng local 8080 nên listener mới không tạo được.
+  - **Cách xử lý:** kiểm tra PID đang giữ cổng bằng `netstat -ano`, rồi dừng tiến trình cũ hoặc đổi sang cổng khác như 8888.
 
 ## 9. Kết luận cuối
 
 - **Trạng thái tổng quan:** Chạy được prometheus, API, frontend/backend, ArgoCD app-of-apps, alert email test.
 - **Các phần chạy ổn:** `argocd-server`, `kube-prometheus-stack`, `monitoring-lab`
+- **Các phần cố ý tắt:** `Grafana`, `kube-state-metrics`, `node-exporter`, `default Prometheus rules` để giữ cho cluster local chạy ổn với 8GB RAM.
+- **Ghi chú thêm:** pipeline GitOps, metrics, canary và alert email đều đã được chứng minh bằng manifest và ảnh chụp thực tế.
 
 ## 10. Lý do các phần code đã hoàn thành
 

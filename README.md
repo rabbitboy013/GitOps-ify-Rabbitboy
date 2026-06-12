@@ -73,15 +73,15 @@ EmailTestAlert -> Prometheus -> Alertmanager -> Gmail
 
 ## Thành Phần Đang Chạy
 
-| Thành phần | Namespace | Chức năng |
-|---|---|---|
-| `root` | `argocd` | App-of-apps, quản lý Application con |
-| `frontend` | `demo` | Nginx phục vụ UI và gọi backend |
-| `backend` | `demo` | HTTP echo backend đơn giản |
-| `api` | `demo` | Flask API triển khai bằng Argo Rollout |
-| `argo-rollouts` | `argo-rollouts` | Canary controller và dashboard |
-| `kube-prometheus-stack` | `monitoring` | Prometheus, Operator và Alertmanager |
-| `monitoring-lab` | `monitoring` | PrometheusRule test email |
+| Thành phần              | Namespace       | Chức năng                              |
+| ----------------------- | --------------- | -------------------------------------- |
+| `root`                  | `argocd`        | App-of-apps, quản lý Application con   |
+| `frontend`              | `demo`          | Nginx phục vụ UI và gọi backend        |
+| `backend`               | `demo`          | HTTP echo backend đơn giản             |
+| `api`                   | `demo`          | Flask API triển khai bằng Argo Rollout |
+| `argo-rollouts`         | `argo-rollouts` | Canary controller và dashboard         |
+| `kube-prometheus-stack` | `monitoring`    | Prometheus, Operator và Alertmanager   |
+| `monitoring-lab`        | `monitoring`    | PrometheusRule test email              |
 
 API Flask hỗ trợ:
 
@@ -236,14 +236,14 @@ Secret và App Password không nằm trong Git. Chạy lại:
 Mỗi lệnh port-forward phải được giữ chạy trong terminal riêng. Nhấn `Ctrl+C`
 để dừng.
 
-| Giao diện | Lệnh | URL |
-|---|---|---|
-| ArgoCD | `kubectl -n argocd port-forward svc/argocd-server 8080:443` | `https://localhost:8080` |
-| Frontend | `kubectl -n demo port-forward svc/frontend 8081:80` | `http://localhost:8081` |
-| API | `kubectl -n demo port-forward svc/api 18080:8080` | `http://localhost:18080` |
-| Prometheus | `kubectl -n monitoring port-forward svc/kube-prometheus-stack-prometheus 9090:9090` | `http://localhost:9090` |
-| Alertmanager | `kubectl -n monitoring port-forward svc/kube-prometheus-stack-alertmanager 9093:9093` | `http://localhost:9093` |
-| Rollouts Dashboard | `kubectl -n argo-rollouts port-forward svc/argo-rollouts-dashboard 3100:3100` | `http://localhost:3100` |
+| Giao diện          | Lệnh                                                                                  | URL                      |
+| ------------------ | ------------------------------------------------------------------------------------- | ------------------------ |
+| ArgoCD             | `kubectl -n argocd port-forward svc/argocd-server 8080:443`                           | `https://localhost:8080` |
+| Frontend           | `kubectl -n demo port-forward svc/frontend 8081:80`                                   | `http://localhost:8081`  |
+| API                | `kubectl -n demo port-forward svc/api 18080:8080`                                     | `http://localhost:18080` |
+| Prometheus         | `kubectl -n monitoring port-forward svc/kube-prometheus-stack-prometheus 9090:9090`   | `http://localhost:9090`  |
+| Alertmanager       | `kubectl -n monitoring port-forward svc/kube-prometheus-stack-alertmanager 9093:9093` | `http://localhost:9093`  |
+| Rollouts Dashboard | `kubectl -n argo-rollouts port-forward svc/argo-rollouts-dashboard 3100:3100`         | `http://localhost:3100`  |
 
 Grafana hiện bị tắt để giảm RAM. Muốn bật lại, sửa:
 
@@ -307,6 +307,18 @@ automated:
 - `prune`: tự xóa resource không còn trong Git.
 - `selfHeal`: tự sửa cluster về trạng thái trong Git nếu có chỉnh tay.
 
+### Rollback bằng Git revert
+
+Khi release lỗi, rollback nên đi qua Git để ArgoCD tự kéo trạng thái cũ về.
+
+```powershell
+git revert <commit-bad>
+git push origin main
+```
+
+ArgoCD sẽ sync về version trước; đây là cách rollback nhanh và reproducible nhất
+cho lab này.
+
 Không nên dùng `kubectl apply` trực tiếp cho manifest app thông thường. Mọi
 thay đổi lâu dài nên đi qua Git.
 
@@ -362,7 +374,7 @@ Invoke-WebRequest http://localhost:18080/metrics -UseBasicParsing
 Kết quả mong đợi:
 
 ```json
-{"ok": true, "version": "v2"}
+{ "ok": true, "version": "v2" }
 ```
 
 Image được build với default `v1`; workload Kubernetes hiện truyền
@@ -401,6 +413,18 @@ Query tổng request:
 sum(flask_http_request_total{namespace="demo"})
 ```
 
+Query SLO 5xx ratio:
+
+```promql
+api:http_5xx_ratio_5m
+```
+
+Kiểm tra alert SLO khi inject lỗi:
+
+```promql
+ALERTS{alertname="ApiHigh5xxRatio", alertstate="firing"}
+```
+
 Tạo traffic thử nghiệm:
 
 ```powershell
@@ -418,7 +442,7 @@ kubectl -n demo delete pod api-load
 Rollout hiện có các bước:
 
 ```text
-25% -> pause thủ công -> 50% -> chờ 30 giây -> 100%
+25% -> AnalysisTemplate -> 50% -> AnalysisTemplate -> 100%
 ```
 
 Do không cấu hình traffic router chuyên dụng, tỷ lệ canary được mô phỏng bằng
@@ -427,6 +451,14 @@ tỷ lệ pod:
 ```text
 25% ~= 1 pod mới + 3 pod cũ
 ```
+
+Nếu metric xấu trong AnalysisTemplate, rollout sẽ tự abort về revision cũ.
+
+### SLO và alert
+
+Mục tiêu đo lường của lab là giữ lỗi 5xx của API dưới ngưỡng 5% trong cửa sổ 5 phút.
+Khi vượt ngưỡng, `ApiHigh5xxRatio` sẽ fire trong Prometheus/Alertmanager, email sẽ
+được gửi về Gmail cá nhân và AnalysisTemplate sẽ fail để rollout tự abort.
 
 ### Kích hoạt revision mới
 
@@ -817,3 +849,10 @@ Các thành phần được giữ:
 
 Mục tiêu là giữ đủ chức năng GitOps, metrics, canary và email alert trong giới
 hạn tài nguyên Docker Desktop local.
+
+kubectl -n argocd port-forward svc/argocd-server 8888:443
+
+https://localhost:8888
+
+$secret = kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}"
+[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($secret))

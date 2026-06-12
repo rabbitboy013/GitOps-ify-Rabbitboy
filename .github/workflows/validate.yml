@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - "k8s/**"
+      - "k8s-api/**"
+      - "monitoring/**"
+      - "argocd/**"
 
 jobs:
   validate:
@@ -11,4 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate Kubernetes manifests
-        run: docker run --rm -v "$PWD:/work" ghcr.io/yannh/kubeconform:latest -strict -summary /work/k8s
+        run: |
+          docker run --rm -v "$PWD:/work" ghcr.io/yannh/kubeconform:latest -strict -ignore-missing-schemas -summary /work/k8s
+          docker run --rm -v "$PWD:/work" ghcr.io/yannh/kubeconform:latest -strict -ignore-missing-schemas -summary /work/k8s-api
+          docker run --rm -v "$PWD:/work" ghcr.io/yannh/kubeconform:latest -strict -ignore-missing-schemas -summary /work/monitoring
+          docker run --rm -v "$PWD:/work" ghcr.io/yannh/kubeconform:latest -strict -ignore-missing-schemas -summary /work/argocd
