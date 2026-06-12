@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: api-error-rate
+  namespace: demo
+spec:
+  metrics:
+    - name: api-http-5xx-ratio
+      interval: 30s
+      count: 1
+      successCondition: len(result) == 1 && result[0] < 0.05
+      failureCondition: len(result) == 1 && result[0] >= 0.05
+      provider:
+        prometheus:
+          address: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
+          query: api:http_5xx_ratio_5m
